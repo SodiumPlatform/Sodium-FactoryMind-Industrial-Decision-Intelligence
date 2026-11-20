@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Streamlit secrets (never commit credentials)
+.streamlit/secrets.toml
+
+# NOTE: data/ai4i2020.csv and models/factorymind_model.joblib are committed
+# on purpose so a fresh Streamlit Cloud deployment works offline. Deleting
+# the model file is safe: the app retrains automatically on startup.

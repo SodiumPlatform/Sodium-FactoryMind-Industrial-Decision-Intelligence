@@ -1,0 +1,14 @@
+# Replit configuration for FactoryMind (Streamlit app)
+run = "pip install -r requirements.txt && streamlit run app.py --server.port 8501 --server.address 0.0.0.0"
+
+[nix]
+channel = "stable-24.05"
+
+[deployment]
+run = ["sh", "-c", "streamlit run app.py --server.port $PORT --server.address 0.0.0.0"]
+deploymentTarget = "cloudrun"
+build = ["sh", "-c", "pip install -r requirements.txt"]
+
+[[ports]]
+localPort = 8501
+externalPort = 80

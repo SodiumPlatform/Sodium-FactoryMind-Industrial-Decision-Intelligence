@@ -1,0 +1,4 @@
+Machine ID,Type,Air temperature [K],Process temperature [K],Rotational speed [rpm],Torque [Nm],Tool wear [min]
+M-101,L,298.1,308.2,1551,42.8,12
+M-102,M,299.3,309.5,1408,51.7,187
+M-103,H,300.0,310.6,1602,38.4,45
