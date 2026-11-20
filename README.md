@@ -75,25 +75,54 @@ traceable to a documented threshold and every action requires human sign-off.
 
 ## Installation
 
-Requires Python 3.11+ (developed and tested on Python 3.12, scikit-learn 1.5.2).
+Requires Python 3.11+ (verified on Python 3.12 and 3.15 with streamlit 1.67.0,
+NumPy 2.5.5, pandas 3.1.1, scikit-learn 1.9.1).
+
+**Windows PowerShell** (note: `&&` and `source` are bash syntax - they fail in PowerShell):
+
+```powershell
+git clone <your-repo-url> factorymind
+cd factorymind
+python -m venv .venv                    # optional but recommended
+.\.venv\Scripts\Activate.ps1            # if blocked: see Troubleshooting below
+python -m pip install -r requirements.txt
+```
+
+**macOS / Linux:**
 
 ```bash
 git clone <your-repo-url> factorymind
 cd factorymind
-python -m venv .venv && source .venv/bin/activate   # optional
-pip install -r requirements.txt
+python3 -m venv .venv && source .venv/bin/activate   # optional
+python3 -m pip install -r requirements.txt
 ```
 
 ## Run
 
 ```bash
-streamlit run app.py
+python -m streamlit run app.py
 ```
 
+`python -m streamlit` works on every platform; if the bare `streamlit`
+command is not recognised (common on Windows when the Scripts folder is not
+on PATH), the module invocation above always works.
+
 Open http://localhost:8501. On first start the app loads the committed model
-bundle (`models/factorymind_model.joblib`). If the bundle or dataset is
-missing, FactoryMind **retrains automatically** from the committed dataset -
-a fresh deployment needs no manual step.
+bundle (`models/factorymind_model.joblib`). If the bundle is missing,
+unreadable, or was trained with a different scikit-learn minor version,
+FactoryMind **retrains automatically** from the committed dataset
+(~10 s locally; no manual step on a fresh deployment).
+
+### Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `The token '&&' is not a valid statement separator` | Windows PowerShell: run commands one at a time (see PowerShell install block above) |
+| `streamlit : ... not recognized` | Use `python -m streamlit run app.py` |
+| `InconsistentVersionWarning: ... unpickle estimator ...` | Bundle trained on another scikit-learn: v1.0.1+ auto-retrains, or run `python -m src.model` once |
+| `AttributeError: module 'numpy' has no attribute 'trapz'` | Fixed in v1.0.1 - the ROC curve now uses `sklearn.metrics.auc` (NumPy >= 2.3 removed `trapz`) |
+| `Please replace use_container_width with width` warnings | Fixed in v1.0.1 - all call sites use the `width` API (needs Streamlit >= 1.49) |
+| `running scripts is disabled on this system` (PowerShell) | `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`, then retry `.\.venv\Scripts\Activate.ps1` |
 
 Useful dev commands:
 
@@ -101,7 +130,7 @@ Useful dev commands:
 python -m src.model                 # train + print evaluation summary
 python scripts/generate_demo_data.py  # regenerate the demo fleet + CSV template
 python scripts/download_dataset.py  # re-download the UCI dataset into data/
-python -m pytest tests -q           # run the test suite (16 tests)
+python -m pytest tests -q           # run the test suite (20 tests)
 ```
 
 ## Dataset source and license
@@ -118,7 +147,7 @@ python -m pytest tests -q           # run the test suite (16 tests)
   `Process temperature [K]`, `Rotational speed [rpm]`, `Torque [Nm]` and
   `Tool wear [min]` are used as model input. The failure-mode labels
   (TWF, HDF, PWF, OSF, RNF) and identifiers (UDI, Product ID) are
-  structurally excluded - enforced in `src/preprocessing.py` and tested.
+  structurally excluded - enforced in `src/model.py` and tested.
 - The dashboard fleet (`M-001`...`M-012`) is generated demonstration data and
   is labelled as such everywhere in the UI.
 
@@ -132,27 +161,26 @@ split was used exactly once, for reporting.
 
 | Metric (test split) | Value |
 |---|---|
-| ROC-AUC | **0.976** |
-| PR-AUC (average precision) | **0.709** (chance level: 0.034) |
-| Precision @ alert threshold 0.31 | **0.613** |
-| Recall @ alert threshold 0.31 | **0.721** |
-| F1-score @ alert threshold 0.31 | **0.662** |
-| Balanced accuracy | **0.852** |
+| ROC-AUC | **0.977** |
+| PR-AUC (average precision) | **0.713** (chance level: 0.034) |
+| Precision @ alert threshold 0.32 | **0.620** |
+| Recall @ alert threshold 0.32 | **0.721** |
+| F1-score @ alert threshold 0.32 | **0.667** |
+| Balanced accuracy | **0.853** |
 
-Confusion matrix (test, at the alert threshold): true negatives **1901**,
-false positives **31**, false negatives **19**, true positives **49**.
+Confusion matrix (test, at the alert threshold): true negatives **1,902**,
+false positives **30**, false negatives **19**, true positives **49**.
 
 Operating thresholds (all derived from validation data, nothing hand-picked):
 
 | Threshold | Value | Derivation |
 |---|---|---|
-| Alert (decision) | 0.31 | maximises F1 on the validation split |
-| Medium risk tier | 0.024 | 80th percentile of validation predicted scores |
-| High risk tier | 0.244 | 95th percentile of validation predicted scores |
+| Alert (decision) | 0.32 | maximises F1 on the validation split |
+| Medium risk tier | 0.02 | 80th percentile of validation predicted scores |
+| High risk tier | 0.24 | 95th percentile of validation predicted scores |
 
 Permutation importance (mean decrease in log-loss, 8 repeats, test split):
-Tool wear 0.098 > Torque 0.070 > Rotational speed 0.036 > Air temperature
-0.035 > Process temperature 0.011 > Type 0.002.
+Tool wear 0.114 > Torque 0.067 > Rotational speed 0.036 > Air temperature 0.035 > Process temperature 0.010 > Type 0.002.
 
 These numbers are produced by the committed model bundle and reproducible via
 `python -m src.model` / `python -m pytest tests -q`.
@@ -180,8 +208,9 @@ These numbers are produced by the committed model bundle and reproducible via
 2. On https://share.streamlit.io choose **New app**, pick the repository,
    branch `main` and main file `app.py`, then deploy.
 3. First deploy trains nothing (bundle is committed) and boots in seconds.
-   If you delete `models/factorymind_model.joblib`, the app retrains
-   automatically on startup (~1-2 minutes on a free instance).
+   If you delete `models/factorymind_model.joblib` (or your scikit-learn
+   minor version differs from the bundle), the app retrains automatically
+   on startup (~1-2 minutes on a free instance, ~10 s locally).
 
 No secrets, no paid APIs, no environment variables required.
 
@@ -236,7 +265,7 @@ factorymind/
     models/                 # factorymind_model.joblib + metrics.json
     docs/                   # architecture.md, model_card.md, data_provenance.md
     scripts/                # dataset download + demo data generation
-    tests/                  # pytest suite (16 tests)
+    tests/                  # pytest suite (20 tests)
     screenshots/            # README evidence
 ```
 

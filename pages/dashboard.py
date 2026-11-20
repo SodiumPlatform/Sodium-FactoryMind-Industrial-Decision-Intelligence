@@ -98,10 +98,10 @@ def render() -> None:
         col1, col2 = st.columns([1, 1.6])
         with col1:
             st.markdown("**Machine health distribution**")
-            st.plotly_chart(viz.fig_health_donut(tier_counts), use_container_width=True)
+            st.plotly_chart(viz.fig_health_donut(tier_counts), width="stretch")
         with col2:
             st.markdown("**Risk by machine type**")
-            st.plotly_chart(viz.fig_risk_by_type(snapshot), use_container_width=True)
+            st.plotly_chart(viz.fig_risk_by_type(snapshot), width="stretch")
 
     with tab_trend:
         if "Timestamp" in df.columns:
@@ -114,16 +114,16 @@ def render() -> None:
                                 - df["Air temperature [K]"])
             st.plotly_chart(
                 viz.fig_trend(df, ["Torque [Nm]", "temp_delta"], overlay),
-                use_container_width=True)
+                width="stretch")
             st.plotly_chart(
                 viz.fig_trend(df, ["Tool wear [min]"], overlay),
-                use_container_width=True)
+                width="stretch")
         else:
             st.info("The active dataset has no Timestamp column, so time trends "
                     "are unavailable. The demo fleet and template uploads include one.")
 
     with tab_ops:
-        st.plotly_chart(viz.fig_scatter_ops(snapshot), use_container_width=True)
+        st.plotly_chart(viz.fig_scatter_ops(snapshot), width="stretch")
         st.caption("Each point is a machine's latest reading, coloured by the "
                    "model's risk tier. The inverse speed-torque relationship "
                    "matches constant spindle power operation.")
@@ -143,7 +143,7 @@ def render() -> None:
                 "risk_tier": "Risk tier"})
             st.dataframe(
                 show.head(10),
-                use_container_width=True, hide_index=True,
+                width="stretch", hide_index=True,
                 column_config={
                     "Failure probability": st.column_config.ProgressColumn(
                         format="%.3f", min_value=0.0, max_value=1.0),

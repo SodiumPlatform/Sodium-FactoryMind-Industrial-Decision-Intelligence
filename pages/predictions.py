@@ -24,7 +24,7 @@ def _render_single(bundle: dict) -> None:
 
     inputs = ui.machine_input_form(bundle, ui.healthy_defaults(bundle), key="pred")
 
-    if st.button("Run prediction", type="primary", use_container_width=False):
+    if st.button("Run prediction", type="primary"):
         with st.spinner("Scoring with the trained Random Forest ..."):
             pred = prediction.predict_row(bundle, inputs)
             base, contrib = prediction.local_contributions(bundle, inputs)
@@ -43,7 +43,7 @@ def _render_single(bundle: dict) -> None:
     col_g, col_r = st.columns([1.2, 1.8])
     with col_g:
         st.plotly_chart(viz.fig_gauge(pred["probability"], bundle["thresholds"]),
-                        use_container_width=True)
+                        width="stretch")
     with col_r:
         st.markdown(
             f"<div style='margin-top:18px'>{ui.risk_badge(pred['tier'])}</div>",
@@ -64,15 +64,15 @@ def _render_single(bundle: dict) -> None:
         st.caption("The score is a Random Forest vote share - a ranking signal, "
                    "not a calibrated probability.")
         if st.button("Open this machine in the Maintenance Advisor",
-                     use_container_width=True):
+                     width="stretch"):
             st.session_state["advisor_source"] = "last_prediction"
 
     st.markdown("**Contributing operational factors** (one-at-a-time sensitivity "
                 "analysis - correlational, not causal):")
     st.plotly_chart(viz.fig_contributions(st.session_state.get("last_contrib", [])),
-                    use_container_width=True)
+                    width="stretch")
     st.dataframe(prediction.value_context(bundle, inputs),
-                 use_container_width=True, hide_index=True)
+                 width="stretch", hide_index=True)
 
     with st.expander("Model information, provenance and limitations"):
         st.markdown(ui.metrics_mini_table(bundle["metrics_test"]))
@@ -120,7 +120,7 @@ def _render_batch(bundle: dict) -> None:
     counts = scored["risk_tier"].value_counts().to_dict()
     c1, c2 = st.columns([1, 2])
     with c1:
-        st.plotly_chart(viz.fig_health_donut(counts), use_container_width=True)
+        st.plotly_chart(viz.fig_health_donut(counts), width="stretch")
     with c2:
         st.metric("Rows scored", len(scored))
         st.metric("Alerts (>= alert threshold)",
@@ -131,7 +131,7 @@ def _render_batch(bundle: dict) -> None:
         "failure_probability": "Failure probability", "risk_tier": "Risk tier"})
     st.dataframe(
         show.head(200),
-        use_container_width=True, hide_index=True,
+        width="stretch", hide_index=True,
         column_config={
             "Failure probability": st.column_config.ProgressColumn(
                 format="%.3f", min_value=0.0, max_value=1.0),

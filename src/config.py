@@ -25,7 +25,7 @@ TEMPLATE_PATH = DATA_DIR / "sample_template.csv"
 MODEL_PATH = MODEL_DIR / "factorymind_model.joblib"
 METRICS_PATH = MODEL_DIR / "metrics.json"
 
-APP_VERSION = "1.0.0-mvp"
+APP_VERSION = "1.0.1-mvp"
 RANDOM_STATE = 42
 
 APP_NAME = "FactoryMind"

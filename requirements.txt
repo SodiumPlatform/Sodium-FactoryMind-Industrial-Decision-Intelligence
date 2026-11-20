@@ -1,9 +1,15 @@
-streamlit>=1.36,<2.0
+streamlit>=1.49,<2.0
 pandas>=2.0
 numpy>=1.26
 scikit-learn>=1.4
 plotly>=5.20
 joblib>=1.3
+
+# Tested with: streamlit 1.67.0, numpy 2.5.5, pandas 3.1.1,
+# scikit-learn 1.9.1, plotly 7.1.0, joblib 1.6.0, Python 3.12 / 3.15.
+# streamlit floor is 1.49 because the `width="stretch"` API replaced
+# `use_container_width` there (deprecated since, removed after 2025-12-31).
+# The NumPy trapz removal (NumPy >= 2.3) is handled via sklearn.metrics.auc.
 
 # development / tests (optional):
 # pytest>=8.0

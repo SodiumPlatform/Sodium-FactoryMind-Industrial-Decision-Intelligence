@@ -108,7 +108,7 @@ def render() -> None:
             "Evidence (from actual input values)": t.evidence,
             "Severity": t.severity,
         } for t in rec["triggers"]])
-        st.dataframe(trig_df, use_container_width=True, hide_index=True)
+        st.dataframe(trig_df, width="stretch", hide_index=True)
     else:
         st.markdown("- No rule triggered; readings are within typical ranges.")
 
@@ -132,7 +132,7 @@ def render() -> None:
          for k, v in trace.items()])
     c1, c2 = st.columns([1, 1.2])
     with c1:
-        st.dataframe(trace_df, use_container_width=True, hide_index=True)
+        st.dataframe(trace_df, width="stretch", hide_index=True)
     with c2:
         st.markdown("**Thresholds applied (validation-derived):**")
         thr = bundle["thresholds"]

@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-11-20T15:25:40+00:00",
+  "trained_at": "2026-11-20T15:52:29+00:00",
   "model_name": "RandomForestClassifier",
   "params": {
     "class_weight": "balanced_subsample",
@@ -65,8 +65,8 @@
   },
   "permutation_importance": {
     "Type": 0.0023918543979719554,
-    "Air temperature [K]": 0.035467522493737476,
-    "Process temperature [K]": 0.010267800094598909,
+    "Air temperature [K]": 0.03546752249373748,
+    "Process temperature [K]": 0.010267800094598913,
     "Rotational speed [rpm]": 0.03639670006627259,
     "Torque [Nm]": 0.06666625334690099,
     "Tool wear [min]": 0.11447509482239437

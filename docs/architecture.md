@@ -66,9 +66,9 @@ model preparation the app runs fully offline.
 ## Threshold design (validation-informed)
 
 1. Alert threshold: the cut-off in `[0.02, 0.98]` that maximises F1 on the
-   **validation** split. Current value: **0.31**.
+   **validation** split. Current value: **0.32**.
 2. Medium tier: 80th percentile of validation predicted scores -> **0.024**.
-3. High tier: 95th percentile of validation predicted scores -> **0.244**.
+3. High tier: 95th percentile of validation predicted scores -> **0.24**.
 
 No constant in the pipeline is hand-picked from test data; the test split is
 evaluated exactly once. Guards (`np.clip`) only protect against degenerate

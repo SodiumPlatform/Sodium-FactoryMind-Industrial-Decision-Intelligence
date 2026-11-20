@@ -30,12 +30,12 @@ def render() -> None:
     st.subheader("Global feature importance (permutation, held-out test split)")
     imp = bundle["permutation_importance"]
     std = bundle["permutation_importance_std"]
-    st.plotly_chart(viz.fig_importance(imp, std), use_container_width=True)
+    st.plotly_chart(viz.fig_importance(imp, std), width="stretch")
     imp_df = (pd.DataFrame({"Feature": list(imp.keys()),
                             "Mean importance": [round(v, 4) for v in imp.values()],
                             "Std": [round(std[k], 4) for k in imp.keys()]})
               .sort_values("Mean importance", ascending=False))
-    st.dataframe(imp_df, use_container_width=True, hide_index=True)
+    st.dataframe(imp_df, width="stretch", hide_index=True)
 
     with st.expander("How to read permutation importance"):
         st.markdown(
@@ -76,11 +76,11 @@ def render() -> None:
 
     c1, c2 = st.columns([1.4, 1.6])
     with c1:
-        st.plotly_chart(viz.fig_contributions(contrib), use_container_width=True)
+        st.plotly_chart(viz.fig_contributions(contrib), width="stretch")
     with c2:
         st.markdown("**Reading context vs training population**")
         st.dataframe(prediction.value_context(bundle, inputs),
-                     use_container_width=True, hide_index=True)
+                     width="stretch", hide_index=True)
 
     if contrib:
         top = contrib[0]

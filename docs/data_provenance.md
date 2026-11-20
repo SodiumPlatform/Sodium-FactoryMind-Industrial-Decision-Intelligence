@@ -30,7 +30,7 @@ Industries (AI4I), 2020, pp. 69-74, doi: 10.24432/C5HS5C.
   official UCI zip archive (downloaded 2026-11-20). No rows or values were
   modified.
 - The original file ships a header quirk: the tool-wear column is named
-  `Tool wear in]` instead of `Tool wear [min]`. FactoryMind normalises this
+  `Tool wear [min]` instead of the documented `Tool wear [min]`. FactoryMind normalises this
   **in memory only** (`src/data_loader.load_ai4i`), keeping the file on disk
   untouched so the hash stays verifiable.
 - `sha256` is recomputed and shown in the app's provenance panels.

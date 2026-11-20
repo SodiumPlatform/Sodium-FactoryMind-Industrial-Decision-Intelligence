@@ -10,6 +10,9 @@ missing, load_model_any() trains it (same behaviour as a fresh deployment).
 """
 from __future__ import annotations
 
+import io
+import pathlib
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -50,7 +53,7 @@ def test_leakage_columns_never_in_features():
 
 
 def test_template_has_required_columns():
-    df = pd.read_csv(pd.io.common.BytesIO(data_loader.sample_template_bytes()))
+    df = pd.read_csv(io.BytesIO(data_loader.sample_template_bytes()))
     res = data_loader.validate_dataframe(df)
     assert res.ok, res.errors
 
@@ -195,3 +198,51 @@ def test_app_and_pages_import():
     for mod in ("dashboard", "data_upload", "predictions", "explainability",
                 "maintenance", "model_performance", "about"):
         importlib.import_module(f"pages.{mod}")
+
+
+# ---------------------------------------------------- regression (v1.0.1) ----
+def test_fig_roc_works_on_new_numpy(bundle):
+    """Regression: np.trapz was removed in NumPy >= 2.3, which crashed the
+    Model Performance page. fig_roc must build on any NumPy version."""
+    from src import visualization as viz
+    proba = bundle["pipeline"].predict_proba(bundle["X_test"])[:, 1]
+    fig = viz.fig_roc(bundle["y_test"], proba)
+    assert fig.layout.title.text and "AUC" in fig.layout.title.text
+    assert "0." in fig.layout.title.text.split("=")[1]  # real AUC value shown
+
+
+def test_fig_pr_curve_works(bundle):
+    from src import visualization as viz
+    proba = bundle["pipeline"].predict_proba(bundle["X_test"])[:, 1]
+    fig = viz.fig_pr_curve(bundle["y_test"], proba)
+    assert "AP" in fig.layout.title.text
+
+
+def test_no_deprecated_use_container_width_anywhere():
+    """Regression: use_container_width is deprecated (removed after
+    2025-12-31). All call sites must use the width API."""
+    root = pathlib.Path(config.PROJECT_ROOT)
+    offenders = []
+    for rel in ("pages", "src", "app.py"):
+        p = root / rel
+        files = p.glob("*.py") if p.is_file() else p.glob("**/*.py")
+        for f in files:
+            if "use_container_width" in f.read_text(encoding="utf-8"):
+                offenders.append(str(f.relative_to(root)))
+    assert offenders == [], f"deprecated use_container_width found in: {offenders}"
+
+
+def test_load_model_any_rejects_foreign_sklearn_version(bundle):
+    """Regression: a bundle pickled by a different sklearn minor version must
+    trigger automatic retraining instead of an InconsistentVersionWarning."""
+    import joblib
+    import sklearn
+
+    tampered = dict(bundle)
+    tampered["sklearn_version"] = "0.0.0"
+    joblib.dump(tampered, config.MODEL_PATH)
+    # bypass the session cache and go through the guarded loader directly
+    reloaded = src_model.load_model_any()
+    assert reloaded["sklearn_version"].startswith(
+        ".".join(sklearn.__version__.split(".")[:2]))
+    assert reloaded["model_name"] == "RandomForestClassifier"

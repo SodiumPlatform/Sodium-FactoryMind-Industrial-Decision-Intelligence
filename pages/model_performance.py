@@ -46,7 +46,7 @@ def render() -> None:
         {"Split": "Test (reporting only)", "Rows": split["test_n"],
          "Failures": split["test_pos"],
          "Failure rate": f"{split['test_pos'] / split['test_n']:.2%}"},
-    ]), use_container_width=True, hide_index=True)
+    ]), width="stretch", hide_index=True)
 
     mt = bundle["metrics_test"]
     mv = bundle["metrics_val"]
@@ -79,7 +79,7 @@ def render() -> None:
         c1, c2 = st.columns([1, 1.6])
         with c1:
             st.plotly_chart(viz.fig_confusion(mt["confusion_matrix"]),
-                            use_container_width=True)
+                            width="stretch")
         with c2:
             cm = mt["confusion_matrix"]
             st.markdown(
@@ -92,12 +92,12 @@ def render() -> None:
             st.caption("Threshold choice trades precision against recall; the "
                        "operating point is documented below.")
     with tab_roc:
-        st.plotly_chart(viz.fig_roc(y_te, proba), use_container_width=True)
+        st.plotly_chart(viz.fig_roc(y_te, proba), width="stretch")
     with tab_pr:
-        st.plotly_chart(viz.fig_pr_curve(y_te, proba), use_container_width=True)
+        st.plotly_chart(viz.fig_pr_curve(y_te, proba), width="stretch")
     with tab_report:
         rep = pd.DataFrame(mt["classification_report"]).T
-        st.dataframe(rep.round(3), use_container_width=True)
+        st.dataframe(rep.round(3), width="stretch")
 
     # ---------------- thresholds ----------------
     st.divider()
@@ -110,14 +110,14 @@ def render() -> None:
          "Derivation": "80th percentile of validation predicted scores"},
         {"Threshold": "High risk tier", "Value": thr["high"],
          "Derivation": "95th percentile of validation predicted scores"},
-    ]), use_container_width=True, hide_index=True)
+    ]), width="stretch", hide_index=True)
     st.caption(thr["derivation"])
 
     # ---------------- importance ----------------
     st.subheader("Feature importance (global)")
     st.plotly_chart(viz.fig_importance(bundle["permutation_importance"],
                                        bundle["permutation_importance_std"]),
-                    use_container_width=True)
+                    width="stretch")
     st.caption("Full interpretation on the Explainable AI page.")
 
     # ---------------- model card ----------------

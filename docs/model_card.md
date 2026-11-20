@@ -16,7 +16,7 @@ Team Sodium | International AI Builders Congress (hackathon MVP)
 - **Target:** `Machine failure` (0/1)
 - **Excluded by design (leakage):** `TWF`, `HDF`, `PWF`, `OSF`, `RNF`
   (failure-mode labels), `UDI`, `Product ID` (identifiers)
-- **Trained:** 2026-11-20, scikit-learn 1.5.2, Python 3.12
+- **Trained:** 2026-11-20, scikit-learn 1.9.1, Python 3.12
 - **Artifact:** `models/factorymind_model.joblib` (+ `models/metrics.json`)
 
 ## Intended use
@@ -54,23 +54,23 @@ dissipation, power, overstrain, random failures). See
 
 | Metric | Value |
 |---|---|
-| ROC-AUC | 0.976 |
-| PR-AUC (average precision) | 0.709 (chance level 0.034) |
-| Precision | 0.613 |
+| ROC-AUC | 0.977 |
+| PR-AUC (average precision) | 0.713 (chance level 0.034) |
+| Precision | 0.620 |
 | Recall | 0.721 |
-| F1-score | 0.662 |
-| Accuracy | 0.975 |
-| Balanced accuracy | 0.852 |
+| F1-score | 0.667 |
+| Accuracy | 0.976 |
+| Balanced accuracy | 0.853 |
 
 Confusion matrix (rows = actual, columns = predicted):
 
 |  | Predicted OK | Predicted failure |
 |---|---|---|
-| **Actual OK** | 1,901 | 31 |
+| **Actual OK** | 1,902 | 30 |
 | **Actual failure** | 19 | 49 |
 
 Interpretation: at the alert operating point the model catches 72% of
-failures with 61% precision - roughly one in three alerts is a false alarm,
+failures with 62% precision - roughly one in three alerts is a false alarm,
 and about 28% of failures are missed. These trade-offs are visible on the
 ROC/PR curves in the app (Model Performance page).
 
@@ -78,19 +78,19 @@ ROC/PR curves in the app (Model Performance page).
 
 | Threshold | Value | Derivation |
 |---|---|---|
-| Alert (decision) | 0.31 | F1-maximising cut-off on validation |
-| Medium tier | 0.024 | 80th percentile of validation scores |
-| High tier | 0.244 | 95th percentile of validation scores |
+| Alert (decision) | 0.32 | F1-maximising cut-off on validation |
+| Medium tier | 0.02 | 80th percentile of validation scores |
+| High tier | 0.24 | 95th percentile of validation scores |
 
 ## Feature importance (permutation, test split, 8 repeats)
 
 | Feature | Mean decrease in log-loss |
 |---|---|
-| Tool wear [min] | 0.098 |
-| Torque [Nm] | 0.070 |
+| Tool wear [min] | 0.114 |
+| Torque [Nm] | 0.067 |
 | Rotational speed [rpm] | 0.036 |
 | Air temperature [K] | 0.035 |
-| Process temperature [K] | 0.011 |
+| Process temperature [K] | 0.010 |
 | Type | 0.002 |
 
 Tool wear and the torque/speed pair dominate - consistent with the dataset's
@@ -114,7 +114,7 @@ anti-correlated in the data; their importance is shared.
 2. **Not calibrated.** Scores are Random Forest vote shares; no calibration
    (Platt/isotonic) was implemented or evaluated.
 3. **Class imbalance.** 3.4% positive rate; precision at the alert threshold
-   (0.61) means false positives are expected - by design, since missed
+   (0.62) means false positives are expected - by design, since missed
    failures are costlier.
 4. **Threshold transfer.** Thresholds are derived from the same synthetic
    distribution; re-derive them on target-domain validation data before

@@ -233,14 +233,44 @@ def train_and_save(data_path=None) -> dict:
     return bundle
 
 
+def _same_sklearn_minor(bundle: dict) -> bool:
+    """True when the bundle was trained on the same sklearn minor version."""
+    try:
+        bundle_v = str(bundle.get("sklearn_version", "")).split(".")[:2]
+        return bool(bundle_v) and bundle_v == sklearn.__version__.split(".")[:2]
+    except Exception:  # noqa: BLE001 - treat unknown as incompatible
+        return False
+
+
 def load_model_any() -> dict:
-    """Load the persisted bundle; retrain automatically if it is missing or
-    unreadable (e.g. sklearn version mismatch on a fresh deployment)."""
+    """Load the persisted bundle; retrain automatically when needed.
+
+    Retraining happens when the bundle is missing, unreadable, or was
+    pickled with a different scikit-learn minor version. A version mismatch
+    would otherwise raise scikit-learn's InconsistentVersionWarning on every
+    startup and risks invalid results (e.g. a bundle trained on sklearn 1.5
+    opened under 1.9+). The committed dataset makes the retrain fully
+    offline-capable, so a fresh deployment or a new scikit-learn release
+    self-heals on first run.
+    """
+    import warnings
+
+    from sklearn.exceptions import InconsistentVersionWarning
+
     if config.MODEL_PATH.exists():
         try:
-            return joblib.load(config.MODEL_PATH)
+            with warnings.catch_warnings():
+                # escalate cross-version unpickling warnings to an exception
+                # so they route into the retrain path instead of leaking
+                warnings.simplefilter("error", category=InconsistentVersionWarning)
+                bundle = joblib.load(config.MODEL_PATH)
+            if _same_sklearn_minor(bundle):
+                return bundle
+            print(f"[FactoryMind] bundle trained on scikit-learn "
+                  f"{bundle.get('sklearn_version')} but running "
+                  f"{sklearn.__version__}; retraining ...")
         except Exception:  # noqa: BLE001 - fall through to retrain
-            pass
+            print("[FactoryMind] existing model bundle unreadable; retraining ...")
     return train_and_save()
 
 

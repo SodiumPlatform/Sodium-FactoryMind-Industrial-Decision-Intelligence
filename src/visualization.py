@@ -12,7 +12,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.io as pio
-from sklearn.metrics import precision_recall_curve, roc_curve
+from sklearn.metrics import (
+    average_precision_score,
+    auc as sk_auc,
+    precision_recall_curve,
+    roc_curve,
+)
 
 from src import config
 
@@ -206,18 +211,18 @@ def fig_roc(y_true, proba) -> go.Figure:
                              line=dict(color=config.PRIMARY, width=3)))
     fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Chance",
                              line=dict(color=config.MUTED, width=1.5, dash="dash")))
-    auc = float(np.trapz(tpr, fpr))
+    # sklearn's auc() is used instead of np.trapz/np.trapezoid so the figure
+    # works on every NumPy version (np.trapz was removed in NumPy >= 2.3).
+    auc_val = float(sk_auc(fpr, tpr))
     fig.update_xaxes(title="False positive rate", range=[0, 1.02])
     fig.update_yaxes(title="True positive rate", range=[0, 1.02])
     fig.update_layout(legend=dict(x=0.98, y=0.02, xanchor="right"),
-                      title=f"ROC curve (AUC = {auc:.3f})")
+                      title=f"ROC curve (AUC = {auc_val:.3f})")
     return _styled(fig)
 
 
 def fig_pr_curve(y_true, proba) -> go.Figure:
     prec, rec, _ = precision_recall_curve(y_true, proba)
-    ap = float(np.mean([p for p in prec]))
-    from sklearn.metrics import average_precision_score
     ap = float(average_precision_score(y_true, proba))
     base = float(np.mean(y_true))
     fig = go.Figure()

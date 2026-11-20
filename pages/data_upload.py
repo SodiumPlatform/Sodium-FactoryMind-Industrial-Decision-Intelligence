@@ -33,11 +33,11 @@ def render() -> None:
             data=data_loader.sample_template_bytes(),
             file_name="factorymind_template.csv",
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
     with action_col2:
         if st.button("Load demonstration fleet as active dataset",
-                     use_container_width=True):
+                     width="stretch"):
             demo = data_loader.load_sample_fleet()
             st.session_state["validated_df"] = demo
             st.session_state["validated_name"] = "Demonstration fleet (sample_data.csv)"
@@ -75,7 +75,7 @@ def render() -> None:
 
     st.subheader("Schema check")
     st.dataframe(pd.DataFrame(result.column_report),
-                 use_container_width=True, hide_index=True)
+                 width="stretch", hide_index=True)
 
     if result.errors:
         st.error("**Validation failed**\n" + "\n".join(f"- {e}" for e in result.errors))
@@ -89,7 +89,7 @@ def render() -> None:
     # --- preview -----------------------------------------------------------
     st.subheader("Data preview (first 10 valid rows)")
     preview = result.cleaned.head(10)
-    st.dataframe(preview, use_container_width=True, hide_index=True)
+    st.dataframe(preview, width="stretch", hide_index=True)
 
     miss = result.cleaned[list(set(raw.columns) & set(result.cleaned.columns))] \
         .isna().sum()
@@ -97,14 +97,14 @@ def render() -> None:
     if not miss.empty:
         st.markdown("**Remaining missing values per column**")
         st.dataframe(miss.rename("missing_count").to_frame(),
-                     use_container_width=True)
+                     width="stretch")
 
     if result.invalid_rows is not None and len(result.invalid_rows) > 0:
         st.markdown(f"**Invalid or unscoreable rows: {len(result.invalid_rows)}**")
         st.caption("These rows were excluded (missing/non-numeric readings or "
                    "unknown machine Type). Source row numbers include the header.")
         st.dataframe(result.invalid_rows.head(20),
-                     use_container_width=True, hide_index=False)
+                     width="stretch", hide_index=False)
 
     # --- persist -------------------------------------------------------------
     st.session_state["validated_df"] = result.cleaned
@@ -120,10 +120,10 @@ def render() -> None:
             data=result.cleaned.to_csv(index=False).encode("utf-8"),
             file_name=f"validated_{uploaded.name}",
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
     with col_b:
-        if st.button("Clear uploaded dataset", use_container_width=True):
+        if st.button("Clear uploaded dataset", width="stretch"):
             st.session_state.pop("validated_df", None)
             st.session_state.pop("validated_name", None)
             st.rerun()

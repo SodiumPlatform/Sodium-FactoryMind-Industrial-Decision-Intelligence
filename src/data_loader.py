@@ -210,7 +210,7 @@ def load_ai4i() -> tuple:
     Returns (dataframe, provenance dict).
     """
     if config.RAW_DATA_PATH.exists():
-        df = pd.read_csv(config.RAW_DATA_PATH)
+        df = pd.read_csv(config.RAW_DATA_PATH, encoding="utf-8-sig")
         # normalise the UCI header quirk 'Tool wear in]' -> canonical name
         df = df.rename(columns={c: _ALIASES.get(_norm(c), c) for c in df.columns})
         sha = hashlib.sha256(config.RAW_DATA_PATH.read_bytes()).hexdigest()[:16]
